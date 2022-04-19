@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<project name="xsearch" basedir=".">
+
+	<target name="base">
+		<gradle_base task="dockerBuildImage"/>
+	</target>
+	<target name="base+push">
+		<gradle_base task="dockerPushImage"/>
+	</target>
+
+	<target name="build">
+		<gradle task="dockerBuildImage"/>
+	</target>
+	<target name="build+push">
+		<gradle task="dockerPushImage"/>
+	</target>
+	<target name="full build">
+		<gradle_base task="clean dockerPushImage"/>
+		<gradle task="dockerPushImage"/>
+	</target>
+	<target name="installDist">
+		<gradle task="installDist"/>
+	</target>
+	<target name="eclipse">
+		<gradle task="cleanEclipse eclipse"/>
+	</target>
+	<target name="dep">
+		<gradle task="dep"/>
+	</target>
+
+	<macrodef name="gradle">
+		<attribute name="task"/>
+		<sequential>
+	        <exec executable="cmd" failonerror="true">
+	        	<arg line="/c gradlew.bat -g D:\jarcache\gradle -Ptarget=app @{task}"/>
+	        </exec>
+		</sequential>
+	</macrodef>
+	<macrodef name="gradle_base">
+		<attribute name="task"/>
+		<sequential>
+	        <exec executable="cmd" failonerror="true">
+	        	<arg line="/c gradlew.bat -g D:\jarcache\gradle -Ptarget=base @{task}"/>
+	        </exec>
+		</sequential>
+	</macrodef>
+	
+</project>

@@ -1,0 +1,42 @@
+ext {
+	xdo = [
+		dockerhub: 'TODO',
+		baseimage: 'openjdk:8u151-jre-alpine'
+	]
+}
+
+int getPort() {
+	def props = new Properties()
+	file("AppConfig.properties").withInputStream { is -> props.load(is) }
+	return props.getProperty('port') as int
+}
+
+docker {
+	javaApplication {
+		ports = [ getPort() ]
+		def imagename = xdo.dockerhub + project.name
+		if (target == 'base') {
+			baseImage = xdo.baseimage
+			images = [ imagename + 'base' ]
+		} else {
+			baseImage = imagename + 'base'
+			images = [ imagename ]
+		}
+		mainClassName = application.mainClass
+	}
+}
+
+dockerCreateDockerfile {
+	outputs.upToDateWhen { false }
+	doLast {
+		def dockerfile = destFile.get().asFile
+		if (target == 'base') {
+			dockerfile.text = """
+				FROM ${docker.javaApplication.baseImage.get()}
+				ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+				COPY libs /app/libs/ """
+		} else {
+			dockerfile.text = dockerfile.text.replace('COPY libs libs/', '')
+		}
+	}
+}
